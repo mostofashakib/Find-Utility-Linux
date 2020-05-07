@@ -9,6 +9,8 @@
 
 static int dopath();
 static int namepath();
+static int nodepath();
+static int modepath();
 
 int main(int argc, char **argv){
 	char actualpath [PATH_MAX+1];
@@ -28,19 +30,28 @@ int main(int argc, char **argv){
 			namepath(resolved, pattern);
 		}
 		else if (strncmp(temp, "-mmin", 4) == 0 ){
-			printf("This is from m minutes\n");
+			char temp_mode = **(++argv);
+
+			switch(temp_mode){
+				case '+':
+				printf("This is the plus condition\n");
+				break;
+				case '-':
+				printf("This is the minus condition\n");
+				break;
+				default:
+				printf("This is the default condition\n");
+				printf("%c\n", temp_mode);
+				break;
+			}
 		}
 		else if (strncmp(temp, "-inum", 4) == 0 ){
-			printf("This is from index number\n");
-		}
-		else{
-			printf("Just a place holder for now");
+			nodepath(resolved, atoi(*++argv));
 		}
 	}
 
 	exit(0);
 }
-
 
 char * full_path;
 
@@ -128,6 +139,56 @@ static int namepath(char * sub_dir, char * pattern){
 
         		}
         		namepath(temp_full_path, pattern);  // recursively calls the namepath function
+        	}
+        }
+        else{
+        	continue;
+        }
+    }
+       closedir(sub_dp);
+   }
+    else
+    {
+        printf("cannot open directory\n");
+        exit(2);
+    }
+}
+
+
+char * full_path;
+
+static int nodepath(char * sub_dir, int number){
+	// struct stat     statbuf;
+	struct dirent   *sub_dirp;
+	DIR  *sub_dp = opendir(sub_dir);         //open the parent
+
+  if(sub_dp!=NULL) {
+       while((sub_dirp = readdir(sub_dp) )!= NULL) {              // read the files in the parent
+        char * temp = sub_dirp->d_name;                           // print names of files in the parent
+        char temp1[2048]= ".\0";
+        char temp2[2048]= "..\0";
+
+	 //recurcively loop into the sub-directory
+
+        if( (strncmp(temp,temp1, 3)!= 0) && (strncmp(temp,temp2, 3) != 0) ) {
+        	char temp3[2048] = "/";
+        	char *temp_sub = temp3;
+        	temp_sub = strcat(temp_sub,temp);
+
+            if(sub_dirp->d_ino == number){    //compare inode numbers
+                printf("%s\n", sub_dirp->d_name);    //also print the file/directory in the parent that links to the child
+            }
+
+        	char * temp_full_path = calloc(2048, sizeof(unsigned char) );
+        	temp_full_path = strcpy(temp_full_path,sub_dir);
+        	strcat(temp_full_path,temp_sub);
+        	DIR * subsubdp = opendir(temp_full_path);
+        	if(subsubdp != NULL){
+        		closedir(subsubdp);
+        		if( (strncmp(temp,temp1, 3)!= 0) ) {
+
+        		}
+        		nodepath(temp_full_path, number);  // recursively calls the nodepath function
         	}
         }
         else{
