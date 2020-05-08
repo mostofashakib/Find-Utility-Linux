@@ -1,3 +1,5 @@
+// including all the necessary libraries
+
 #include <dirent.h>
 #include <limits.h>
 #include <stdio.h>
@@ -14,7 +16,6 @@
 static int dopath();
 static int namepath();
 static int namepath_delete();
-static int namepath_exec();
 static int nodepath();
 static int nodepath_delete();
 static int modepath_bool();
@@ -23,15 +24,18 @@ static int modepath_number();
 static int modepath_number_delete();
 
 int main(int argc, char **argv){
-	char actualpath [PATH_MAX+1];
-	char * resolved = realpath(argv[1],actualpath);
-	char ** argv_p = argv;
+	char actualpath [PATH_MAX+1];   // initializing an array of strings
+	char * resolved = realpath(argv[1],actualpath); // a variable that stores real path
+	char ** argv_p = argv;   // copy the reference the argv array
 
 	if (argc == 2){         // checks to see if the argument passed is for the first case.
 		dopath(resolved);
 	} 
 
 	++argv; // moves argv to the index 1 argument
+
+
+	// this loop is used to parse the argument from the command prompt
 
 	while(*++argv != NULL && **argv == '-'){ 
 		char *temp = *argv;
@@ -40,11 +44,11 @@ int main(int argc, char **argv){
 			char *pattern = *++argv;
 			if (argc >= 5){
 				if (strncmp(argv_p[4], "-delete", 8) == 0){
-					printf("This is for the delete testing purpose\n");
+					printf("This is for the delete testing purpose\n");   // this is used for testing purposes
 					namepath_delete(resolved, pattern);
 				}
 				else if (strncmp(argv_p[4], "-exec", 6) == 0){
-					execvp(argv_p[5], &argv_p[5]);
+					execvp(argv_p[5], &argv_p[5]);   // this is used to execute the -exec functionality
 				}
 			}
 			else{
@@ -128,8 +132,8 @@ int main(int argc, char **argv){
 char * full_path;
 
 static int dopath(char * sub_dir) {
-	struct dirent   *sub_dirp;
-	DIR  *sub_dp = opendir(sub_dir);   //open the parent
+	struct dirent   *sub_dirp;         // pointer to the dirent struct
+	DIR  *sub_dp = opendir(sub_dir);   // open the parent directory
 
   if(sub_dp!=NULL) {
        while((sub_dirp = readdir(sub_dp) )!= NULL) {    //read the files in the parent
@@ -137,20 +141,20 @@ static int dopath(char * sub_dir) {
         char temp1[2048]= ".\0";
         char temp2[2048]= "..\0";
 
-	 //recurcively loop into the sub-directory
+	 // walks over the directory
 
         if( (strncmp(temp,temp1, 3)!= 0) && (strncmp(temp,temp2, 3) != 0) ) {
         	char temp3[2048] = "/";
         	char *temp_sub = temp3;
         	temp_sub = strcat(temp_sub,temp);
-        	printf("./%s\n", sub_dirp->d_name);
-        	char * temp_full_path = calloc(2048, sizeof(unsigned char) );
-        	temp_full_path = strcpy(temp_full_path,sub_dir);
-        	strcat(temp_full_path,temp_sub);
+        	printf("./%s\n", sub_dirp->d_name);   // prints the files that are present in the directory
+        	char * temp_full_path = calloc(2048, sizeof(unsigned char) ); // allocating memory space
+        	temp_full_path = strcpy(temp_full_path,sub_dir); // takes a copy
+        	strcat(temp_full_path,temp_sub);  //  joins two strings together
         	DIR * subsubdp = opendir(temp_full_path);
         	if(subsubdp != NULL){
         		closedir(subsubdp);
-        		dopath(temp_full_path);   // recursively calls the dopath function
+        		dopath(temp_full_path);   // recursively calls the dopath function for sub directories
         	}
         }
         else{
@@ -166,9 +170,6 @@ static int dopath(char * sub_dir) {
     }
 }
 
-
-char * full_path;
-
 static int namepath(char * sub_dir, char * pattern){
 	struct dirent   *sub_dirp;
 	DIR  *sub_dp = opendir(sub_dir);         //open the parent
@@ -179,7 +180,7 @@ static int namepath(char * sub_dir, char * pattern){
         char temp1[2048]= ".\0";
         char temp2[2048]= "..\0";
 
-	 //recurcively loop into the sub-directory
+	 // walk over a directory
 
         if( (strncmp(temp,temp1, 3)!= 0) && (strncmp(temp,temp2, 3) != 0) ) {
         	char temp3[2048] = "/";
@@ -197,7 +198,7 @@ static int namepath(char * sub_dir, char * pattern){
         		if( (strncmp(temp,temp1, 3)!= 0) ) {
 
         		}
-        		namepath(temp_full_path, pattern);  // recursively calls the namepath function
+        		namepath(temp_full_path, pattern);  // // recursively calls the dopath function for sub directories
         	}
         }
         else{
@@ -213,11 +214,10 @@ static int namepath(char * sub_dir, char * pattern){
     }
 }
 
-char * full_path;
 
 static int nodepath(char * sub_dir, int number){
 	struct dirent   *sub_dirp;
-	DIR  *sub_dp = opendir(sub_dir);         //open the parent
+	DIR  *sub_dp = opendir(sub_dir);         // open the parent
 
   if(sub_dp!=NULL) {
        while((sub_dirp = readdir(sub_dp) )!= NULL) {              // read the files in the parent
@@ -225,14 +225,14 @@ static int nodepath(char * sub_dir, int number){
         char temp1[2048]= ".\0";
         char temp2[2048]= "..\0";
 
-	 //recurcively loop into the sub-directory
+	 // walk over a directory
 
         if( (strncmp(temp,temp1, 3)!= 0) && (strncmp(temp,temp2, 3) != 0) ) {
         	char temp3[2048] = "/";
         	char *temp_sub = temp3;
         	temp_sub = strcat(temp_sub,temp);
 
-            if(sub_dirp->d_ino == number){    //compare inode numbers
+            if(sub_dirp->d_ino == number){    // compare inode numbers
                 printf("%s\n", sub_dirp->d_name);    //also print the file/directory in the parent that links to the child
             }
 
@@ -245,7 +245,7 @@ static int nodepath(char * sub_dir, int number){
         		if( (strncmp(temp,temp1, 3)!= 0) ) {
 
         		}
-        		nodepath(temp_full_path, number);  // recursively calls the nodepath function
+        		nodepath(temp_full_path, number);  // recursively calls the dopath function for sub directories
         	}
         }
         else{
@@ -261,8 +261,6 @@ static int nodepath(char * sub_dir, int number){
     }
 }
 
-
-char * full_path;
 
 static int modepath_number(char * sub_dir, int number){
 	struct dirent   *sub_dirp;
@@ -283,7 +281,7 @@ static int modepath_number(char * sub_dir, int number){
         char temp1[2048]= ".\0";
         char temp2[2048]= "..\0";
 
-	 //recurcively loop into the sub-directory
+	 // walks over the directory
 
         if( (strncmp(temp,temp1, 3)!= 0) && (strncmp(temp,temp2, 3) != 0) ) {
         	char temp3[2048] = "/";
@@ -309,7 +307,7 @@ static int modepath_number(char * sub_dir, int number){
         		if( (strncmp(temp,temp1, 3)!= 0) ) {
 
         		}
-        		modepath_number(temp_full_path, number);  // recursively calls the nodepath function
+        		modepath_number(temp_full_path, number);  // recursively calls the dopath function for sub directories
         	}
         }
         else{
@@ -324,8 +322,6 @@ static int modepath_number(char * sub_dir, int number){
         exit(2);
     }
 }
-
-char * full_path;
 
 static int modepath_bool(char * sub_dir, int number, int flag){
 	struct dirent   *sub_dirp;
@@ -347,7 +343,7 @@ static int modepath_bool(char * sub_dir, int number, int flag){
         char temp1[2048]= ".\0";
         char temp2[2048]= "..\0";
 
-	 //recurcively loop into the sub-directory
+	 // walk over the directory
 
         if( (strncmp(temp,temp1, 3)!= 0) && (strncmp(temp,temp2, 3) != 0) ) {
         	char temp3[2048] = "/";
@@ -380,7 +376,7 @@ static int modepath_bool(char * sub_dir, int number, int flag){
         		if( (strncmp(temp,temp1, 3)!= 0) ) {
 
         		}
-        		modepath_bool(temp_full_path, number, flag);  // recursively calls the nodepath function
+        		modepath_bool(temp_full_path, number, flag);  // recursively calls the dopath function for sub directories
         	}
         }
         else{
@@ -395,8 +391,6 @@ static int modepath_bool(char * sub_dir, int number, int flag){
         exit(2);
     }
 }
-
-char * full_path;
 
 static int namepath_delete(char * sub_dir, char * pattern){
 	struct dirent   *sub_dirp;
@@ -423,7 +417,7 @@ static int namepath_delete(char * sub_dir, char * pattern){
 
         	if (strncmp(sub_dirp->d_name, pattern, 2048) == 0){   // checks to see if the given pattern exists in the directory
             	remove(strncat(resolved, sub_dirp->d_name, 2048));    // delete file/directory in the parent that links to the child
-            	strcpy(resolved, array_path);
+            	strcpy(resolved, array_path);                       // goes back to the original path
         	}
         }
         else{
@@ -439,7 +433,6 @@ static int namepath_delete(char * sub_dir, char * pattern){
     }
 }
 
-char * full_path;
 
 static int nodepath_delete(char * sub_dir, int number){
 	struct dirent   *sub_dirp;
@@ -481,7 +474,6 @@ static int nodepath_delete(char * sub_dir, int number){
     }
 }
 
-char * full_path;
 
 static int modepath_number_delete(char * sub_dir, int number){
 	struct dirent   *sub_dirp;
@@ -531,7 +523,6 @@ static int modepath_number_delete(char * sub_dir, int number){
     }
 }
 
-char * full_path;
 
 static int modepath_bool_delete(char * sub_dir, int number, int flag){
 	struct dirent   *sub_dirp;
