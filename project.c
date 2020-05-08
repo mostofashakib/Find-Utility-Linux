@@ -14,6 +14,7 @@
 static int dopath();
 static int namepath();
 static int namepath_delete();
+static int namepath_exec();
 static int nodepath();
 static int nodepath_delete();
 static int modepath_bool();
@@ -43,7 +44,7 @@ int main(int argc, char **argv){
 					namepath_delete(resolved, pattern);
 				}
 				else if (strncmp(argv_p[4], "-exec", 6) == 0){
-					printf("This is for the exec testing purpose\n");
+					execvp(argv_p[5], &argv_p[5]);
 				}
 			}
 			else{
@@ -80,6 +81,7 @@ int main(int argc, char **argv){
 				}
 				else if (strncmp(argv_p[4], "-exec", 6) == 0){
 					printf("This is for the exec testing purpose\n");
+					printf("%s\n", argv_p[5]);
 				}
 			}
 			else{
@@ -104,10 +106,14 @@ int main(int argc, char **argv){
 			if (argc >= 5){
 				if (strncmp(argv_p[4], "-delete", 8) == 0){
 					printf("This is for the delete testing purpose\n");
-					nodepath_delete(resolved, atoi(*++argv));
+					//nodepath_delete(resolved, atoi(*++argv));
 				}
 				else if (strncmp(argv_p[4], "-exec", 6) == 0){
 					printf("This is for the exec testing purpose\n");
+					printf("This is resolved: %s\n", resolved);
+					printf("This is pattern: %d\n", atoi(*++argv));
+					printf("This is command: %s\n", argv_p[5]);
+					// nodepath_exec(resolved, atoi(*++argv), &argv_p[5]);
 				}
 			}
 			else{
